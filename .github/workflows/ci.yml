@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify (Node.js ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - "20"
+          - "22"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Enforce zero production runtime dependencies
+        run: |
+          node -e '
+            const fs = require("node:fs");
+            const pkg = JSON.parse(fs.readFileSync("./package.json", "utf8"));
+            const prodDeps = Object.keys(pkg.dependencies ?? {});
+            const optDeps = Object.keys(pkg.optionalDependencies ?? {});
+            if (prodDeps.length > 0 || optDeps.length > 0) {
+              console.error("Zero-dependency invariant violated:", { prodDeps, optDeps });
+              process.exit(1);
+            }
+            console.log("Verified: 0 production runtime dependencies.");
+          '
+
+      - name: Install toolchain dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Run ESLint static analysis
+        run: npm run lint
+
+      - name: Run strict TypeScript typecheck
+        run: npm run typecheck
+
+      - name: Build ESM dist and declarations
+        run: npm run build
+
+      - name: Execute unit and integration test suite
+        run: npm test
