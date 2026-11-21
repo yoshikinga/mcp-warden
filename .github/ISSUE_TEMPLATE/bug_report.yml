@@ -1,0 +1,60 @@
+name: "Bug Report"
+description: "Report a functional bug, false-positive guard block, or runtime compatibility issue."
+title: "[Bug]: "
+labels:
+  - "bug"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Security Vulnerability Notice:** If you discovered a guard bypass (e.g., path traversal, SSRF, command injection, or audit hash-chain forgery), **please do NOT open a public issue**. Follow our private disclosure instructions in [`SECURITY.md`](https://github.com/yoshikinga/mcp-warden/blob/main/SECURITY.md).
+
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: "JavaScript / TypeScript Runtime"
+      description: "Which runtime environment exhibited the issue?"
+      options:
+        - "Node.js 22 LTS"
+        - "Node.js 20 LTS"
+        - "Bun"
+        - "Deno"
+        - "Cloudflare Workers / Edge Runtime"
+        - "Other"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: "mcp-warden & Runtime Version"
+      description: "Provide exact versions (e.g., mcp-warden v1.0.0, Node v22.14.0)."
+      placeholder: "mcp-warden v1.0.0 / Node.js v22.14.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Minimal Reproduction Payload & Config"
+      description: "Provide a self-contained `WardenConfig` and sample JSON-RPC 2.0 request (ensure all real secrets are scrubbed)."
+      render: typescript
+    validations:
+      required: true
+
+  - type: textarea
+    id: behavior
+    attributes:
+      label: "Expected vs. Actual Outcome"
+      description: "Describe what decision/reasonCode you expected versus what `McpWarden` returned."
+    validations:
+      required: true
+
+  - type: input
+    id: sponsor
+    attributes:
+      label: "GitHub Sponsors Handle / Tier (Optional)"
+      description: "Startup Shield, Silver Partner, and Enterprise Guardian sponsors receive <24h–48h priority bug triage."
+      placeholder: "@your-org"
+    validations:
+      required: false
