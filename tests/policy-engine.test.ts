@@ -19,7 +19,9 @@ function buildCall(
     method: "tools/call",
     params: { name: toolName, arguments: args }
   });
-  assert.equal(validated.ok, true);
+  if (!validated.ok) {
+    throw new Error(`Unexpected envelope validation failure: ${validated.detail}`);
+  }
   return validated.invocation;
 }
 
