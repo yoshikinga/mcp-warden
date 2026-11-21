@@ -55,15 +55,25 @@ A single indirect prompt injection hidden inside a fetched webpage, Jira ticket,
 ## Inline 6-Stage Inspection Architecture
 
 ```mermaid
-flowchart LR
-    Agent["AI Agent / MCP Host"] -->|"JSON-RPC 2.0"| S1["1. PayloadGuard<br/>Byte, Depth & Key Caps"]
-    S1 --> S2["2. Canonicalizer<br/>Multi-Pass % Decode & NFC"]
-    S2 --> S3["3. RateLimiter<br/>Bounded Sliding Window"]
-    S3 --> S4["4. PolicyEngine<br/>Zero-Trust RBAC & O(n) Glob"]
-    S4 --> S5["5. Threat Guards<br/>Root-Jail • Shell • Bitwise SSRF"]
-    S5 -->|"ALLOW / DENY"| S6["6. AuditLogger<br/>Secret Scrub + SHA-256 Chain"]
-    S6 -->|"Verified Raw Args"| Server[("MCP Server Handler")]
-    S6 -.->|"Sanitized Error (-32001..-32004)"| Agent
+flowchart TB
+    Agent["AI Agent / MCP Host (JSON-RPC 2.0)"] --> S1
+
+    subgraph Ingress["Ingress & Access Control"]
+        direction LR
+        S1["1. PayloadGuard<br/>Byte, Depth & Key Caps"] --> S2["2. Canonicalizer<br/>Multi-Pass % Decode & NFC"]
+        S2 --> S3["3. RateLimiter<br/>Bounded Sliding Window"]
+    end
+
+    S3 --> S4
+
+    subgraph DeepDefense["Zero-Trust Policy, Threat Guards & Audit"]
+        direction LR
+        S4["4. PolicyEngine<br/>Explicit DENY > ALLOW • O(n) Glob"] --> S5["5. Threat Guards<br/>Root-Jail • Shell • Bitwise SSRF"]
+        S5 --> S6["6. AuditLogger<br/>Secret Scrub + SHA-256 Chain"]
+    end
+
+    S6 -->|"ALLOW (Unmutated Raw Args)"| Server[("Protected MCP Server Handler")]
+    S6 -.->|"DENY (Sanitized JSON-RPC Error)"| Agent
 
     style S1 fill:#0f172a,stroke:#38bdf8,stroke-width:1.5px,color:#f8fafc
     style S2 fill:#0f172a,stroke:#38bdf8,stroke-width:1.5px,color:#f8fafc
@@ -75,15 +85,21 @@ flowchart LR
 
 ---
 
-## Quickstart in 3 Commands
+## Quickstart & Installation
+
+**Install directly into an existing MCP server project (verified `v1.0.0` release tag):**
 
 ```bash
-git clone [https://github.com/yoshikinga/mcp-warden.git](https://github.com/yoshikinga/mcp-warden.git)
+npm install "github:yoshikinga/mcp-warden#v1.0.0"
+```
+
+**Or clone from source to run the test suite & sub-millisecond benchmark:**
+
+```bash
+git clone "[https://github.com/yoshikinga/mcp-warden.git](https://github.com/yoshikinga/mcp-warden.git)"
 cd mcp-warden && npm install
 npm test && npm run bench
 ```
-
-*(When consuming as a package in your MCP server project: `npm install mcp-warden`)*
 
 ---
 
@@ -117,8 +133,8 @@ const warden = new McpWarden(
 
 export const handleMcpMessage = warden.wrap(
   async (_rawRequest, invocation) => {
-    // Only reached when all 6 security stages pass.
-    // `invocation.rawArguments` is guaranteed unmutated for your tool implementation.
+    // Reached only when all 6 security stages pass.
+    // `invocation.rawArguments` remains unmutated for your tool handler.
     return {
       jsonrpc: JSONRPC_VERSION,
       id: invocation.requestId,
@@ -181,9 +197,17 @@ const warden = new McpWarden(
         operations: ["tool"],
         targets: ["crm:query_customers"],
         argumentConstraints: {
-          dataset: { required: true, type: "string", allowedPrefixes: ["public_", "agg_"] },
+          dataset: {
+            required: true,
+            type: "string",
+            allowedPrefixes: ["public_", "agg_"]
+          },
           limit: { required: true, type: "number", min: 1, max: 50 },
-          region: { required: true, type: "string", enum: ["us-east", "eu-west"] }
+          region: {
+            required: true,
+            type: "string",
+            enum: ["us-east", "eu-west"]
+          }
         }
       }
     ],
@@ -198,7 +222,7 @@ const warden = new McpWarden(
   }
 );
 
-const outcome = await warden.inspect(
+await warden.inspect(
   {
     jsonrpc: "2.0",
     id: 42,
@@ -209,7 +233,8 @@ const outcome = await warden.inspect(
         dataset: "agg_active_orgs",
         limit: 25,
         region: "us-east",
-        apiKey: "sk-live-secret-key" // Automatically masked as "[REDACTED]" in audit logs
+        // Automatically masked as "[REDACTED]" inside sealed audit logs:
+        apiKey: "sk-live-secret-key"
       }
     }
   },
@@ -240,7 +265,7 @@ const readOnlyWarden = new McpWarden(
 
 ## Deterministic Security Guarantees & Error Mapping
 
-| JSON-RPC Code | Audit Reason Code | Trigger Condition |
+| Error Code | Audit Reason Code | Trigger Condition |
 | :--- | :--- | :--- |
 | `-32600` | `INVALID_ENVELOPE` | Malformed JSON-RPC 2.0 header, invalid `id`, or disallowed batch array. |
 | `-32602` | `ARGUMENT_CONSTRAINT_FAILED` | Tool parameter violated `required`, `type`, `enum`, `min`/`max`, or `allowedPrefixes`. |
