@@ -1,0 +1,43 @@
+name: "Feature / Security Rule Proposal"
+description: "Propose a new threat guard, policy constraint, preset, or MCP runtime adapter."
+title: "[Feat]: "
+labels:
+  - "enhancement"
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Operational Risk or Threat Scenario"
+      description: "What production MCP / AI Agent risk or integration friction does this proposal solve?"
+      placeholder: "e.g., Restricting outbound DNS rebinding patterns or adding a SOC2 compliance preset..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Proposed API or Policy Behavior"
+      description: "Sketch how the configuration or TypeScript interface should look."
+      render: typescript
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: "Architectural Alignment"
+      description: "Confirm alignment with core `mcp-warden` engineering invariants:"
+      options:
+        - label: "Can be implemented with 0 external runtime npm dependencies (Web Standard APIs only)."
+          required: true
+        - label: "Preserves deterministic sub-millisecond inline latency and bounded memory."
+          required: true
+
+  - type: input
+    id: sponsor
+    attributes:
+      label: "GitHub Sponsors Handle / Tier (Optional)"
+      description: "Production Builder and B2B sponsors receive roadmap voting priority."
+      placeholder: "@your-handle"
+    validations:
+      required: false
