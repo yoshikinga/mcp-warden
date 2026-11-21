@@ -1,0 +1,90 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+categories:
+  - title: "🛡️ Security & Guardrails"
+    labels:
+      - "security"
+      - "guardrails"
+  - title: "🚀 Features"
+    labels:
+      - "feat"
+      - "enhancement"
+  - title: "🐛 Bug Fixes"
+    labels:
+      - "fix"
+      - "bug"
+  - title: "⚡ Performance"
+    labels:
+      - "perf"
+      - "performance"
+  - title: "📖 Documentation & Examples"
+    labels:
+      - "docs"
+      - "documentation"
+  - title: "🧰 Maintenance & CI"
+    labels:
+      - "chore"
+      - "ci"
+      - "build"
+
+change-template: "- $TITLE (@$AUTHOR) (#$NUMBER)"
+change-title-escapes: '\<*_&'
+
+version-resolver:
+  major:
+    labels:
+      - "breaking"
+      - "major"
+  minor:
+    labels:
+      - "feat"
+      - "enhancement"
+      - "security"
+  patch:
+    labels:
+      - "fix"
+      - "bug"
+      - "perf"
+      - "docs"
+      - "chore"
+  default: patch
+
+autolabeler:
+  - label: "security"
+    files:
+      - "src/guards/**"
+      - "src/protocol/**"
+      - "src/audit/**"
+    title:
+      - "/^(feat|fix)\\((guards|ssrf|protocol|audit)\\):/i"
+  - label: "feat"
+    title:
+      - "/^feat(\\(.*\\))?:/i"
+  - label: "fix"
+    title:
+      - "/^fix(\\(.*\\))?:/i"
+  - label: "perf"
+    title:
+      - "/^perf(\\(.*\\))?:/i"
+  - label: "docs"
+    files:
+      - "*.md"
+      - "examples/**"
+    title:
+      - "/^docs(\\(.*\\))?:/i"
+  - label: "chore"
+    files:
+      - ".github/**"
+    title:
+      - "/^(chore|ci|build|refactor|test)(\\(.*\\))?:/i"
+
+template: |
+  ## What's Changed in v$RESOLVED_VERSION
+
+  $CHANGES
+
+  ---
+
+  **Supply-Chain Guarantee:** `0` runtime npm dependencies | Strict ESM TypeScript | Verified on Node.js 20 & 22 LTS.
+  **Full Changelog:** https://github.com/yoshikinga/mcp-warden/commits/v$RESOLVED_VERSION
