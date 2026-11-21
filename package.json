@@ -1,0 +1,70 @@
+{
+  "name": "mcp-warden",
+  "version": "1.0.0",
+  "description": "Zero-dependency TypeScript firewall, RBAC policy engine, and SHA-256 tamper-evident audit trail for Model Context Protocol (MCP) servers and AI Agent tools.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "lint": "eslint src tests benchmarks examples",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "bench": "node --import tsx benchmarks/pipeline-latency.bench.ts",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm run build && npm test"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "mcp-security",
+    "ai-agents",
+    "llm-security",
+    "guardrails",
+    "prompt-injection",
+    "rbac",
+    "audit-log",
+    "ssrf-protection",
+    "zero-dependencies",
+    "typescript"
+  ],
+  "author": "Yoshi Kinga <yuki0528@dd.iij4u.or.jp> (https://github.com/yoshikinga)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yoshikinga/mcp-warden.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yoshikinga/mcp-warden/issues"
+  },
+  "homepage": "https://github.com/yoshikinga/mcp-warden#readme",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/yoshikinga"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "@types/node": "^22.9.0",
+    "eslint": "^9.15.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.15.0"
+  }
+}
