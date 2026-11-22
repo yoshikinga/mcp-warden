@@ -1,32 +1,41 @@
 {
   "name": "mcp-warden",
-  "version": "1.0.0",
-  "description": "Zero-dependency TypeScript firewall, RBAC policy engine, and SHA-256 tamper-evident audit trail for Model Context Protocol (MCP) servers and AI Agent tools.",
+  "version": "1.1.0",
+  "description": "Zero-dependency TypeScript full-duplex firewall, RBAC policy engine, rug-pull guard, and HMAC-SHA256 audit trail for Model Context Protocol (MCP) servers.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "mcp-warden": "./dist/cli/bin.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli/cli-runner.d.ts",
+      "import": "./dist/cli/cli-runner.js"
     }
   },
   "files": [
     "dist",
     "README.md",
     "LICENSE",
-    "SECURITY.md"
+    "SECURITY.md",
+    "THREAT_MODEL.md"
   ],
   "sideEffects": false,
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
-    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
     "typecheck": "tsc --noEmit",
     "build": "npm run clean && tsc -p tsconfig.build.json",
     "lint": "eslint src tests benchmarks examples",
-    "test": "node --import tsx --test tests/*.test.ts",
+    "test": "node --import tsx --test \"tests/*.test.ts\"",
+    "selftest": "node --import tsx src/cli/bin.ts self-test",
     "bench": "node --import tsx benchmarks/pipeline-latency.bench.ts",
     "prepublishOnly": "npm run lint && npm run typecheck && npm run build && npm test"
   },
@@ -39,8 +48,10 @@
     "llm-security",
     "guardrails",
     "prompt-injection",
+    "tool-poisoning",
     "rbac",
     "audit-log",
+    "hmac",
     "ssrf-protection",
     "zero-dependencies",
     "typescript"
