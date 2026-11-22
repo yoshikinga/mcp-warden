@@ -1,0 +1,6 @@
+Contact: https://github.com/yoshikinga/mcp-warden/security/advisories/new
+Contact: mailto:yuki0528@dd.iij4u.or.jp
+Expires: 2027-11-23T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://raw.githubusercontent.com/yoshikinga/mcp-warden/main/.github/SECURITY.txt
+Policy: https://github.com/yoshikinga/mcp-warden/blob/main/SECURITY.md
