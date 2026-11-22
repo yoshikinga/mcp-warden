@@ -45,7 +45,7 @@ jobs:
           echo "TARBALL=$TARBALL" >> "$GITHUB_ENV"
 
       - name: Upload workflow build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mcp-warden-release-bundle
           path: |
