@@ -34,7 +34,7 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run clean && tsc -p tsconfig.build.json",
     "lint": "eslint src tests benchmarks examples",
-    "test": "node --import tsx --test \"tests/*.test.ts\"",
+    "test": "node --import tsx --test tests/*.test.ts",
     "selftest": "node --import tsx src/cli/bin.ts self-test",
     "bench": "node --import tsx benchmarks/pipeline-latency.bench.ts",
     "prepublishOnly": "npm run lint && npm run typecheck && npm run build && npm test"
