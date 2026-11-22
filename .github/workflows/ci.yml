@@ -44,11 +44,12 @@ jobs:
             const pkg = JSON.parse(fs.readFileSync("./package.json", "utf8"));
             const prodDeps = Object.keys(pkg.dependencies ?? {});
             const optDeps = Object.keys(pkg.optionalDependencies ?? {});
-            if (prodDeps.length > 0 || optDeps.length > 0) {
-              console.error("Zero-dependency invariant violated:", { prodDeps, optDeps });
+            const peerDeps = Object.keys(pkg.peerDependencies ?? {});
+            if (prodDeps.length > 0 || optDeps.length > 0 || peerDeps.length > 0) {
+              console.error("Zero-dependency invariant violated:", { prodDeps, optDeps, peerDeps });
               process.exit(1);
             }
-            console.log("Verified: 0 production runtime dependencies.");
+            console.log("Verified: 0 production/optional/peer runtime dependencies.");
           '
 
       - name: Install toolchain dependencies
@@ -68,5 +69,11 @@ jobs:
       - name: Build ESM dist and declarations
         run: npm run build
 
-      - name: Execute unit and integration test suite
+      - name: Execute unit, integration, and OWASP red-team test suites
         run: npm test
+
+      - name: Verify compiled zero-dependency CLI binary self-test
+        run: node dist/cli/bin.js self-test --json
+
+      - name: Validate npm package tarball contents (dry-run)
+        run: npm pack --dry-run
