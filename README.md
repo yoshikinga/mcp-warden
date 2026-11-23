@@ -59,32 +59,17 @@ When you connect an autonomous AI Agent to **Model Context Protocol (MCP)** serv
 ## Full-Duplex Security Architecture (`v1.1.0`)
 
 ```mermaid
-flowchart TB
-    Agent["AI Agent / MCP Host"] -->|"1. JSON-RPC Request"| CB
+flowchart LR
+    Agent["AI Agent /<br/>MCP Host"] -->|"1. JSON-RPC Request"| Ingress["Ingress Pipeline<br/>CircuitBreaker • Payload • Canon<br/>UnicodeTrojan • Rate • RBAC • SSRF"]
+    Ingress -->|"ENFORCE / DRY_RUN"| Server[("Protected<br/>MCP Server")]
+    Server -->|"2. tools/list & Result"| Egress["Discovery & Egress Shield<br/>ToolIntegrity SHA-256 Pinning<br/>+ EgressSecretGuard Redaction"]
+    Egress -->|"Pinned & Scrubbed"| Agent
+    Ingress & Egress -.->|"Signed Stream"| Audit["HMAC-SHA256 NDJSON Audit<br/>+ ViolationHooks + SecOps CLI"]
 
-    subgraph Ingress["Ingress Defense Pipeline"]
-        direction LR
-        CB["SessionCircuitBreaker<br/>O(1) Quarantine"] --> UGuard["Payload + Canonicalizer<br/>+ UnicodeTrojanGuard"]
-        UGuard --> Core["RateLimiter + Zero-Trust RBAC<br/>+ Root-Jail / Shell / Bitwise SSRF"]
-    end
-
-    Core -->|"ENFORCE or DRY_RUN"| Server[("Protected MCP Server")]
-    Server -->|"2. tools/list or Tool Result"| PinGuard
-
-    subgraph Egress["Discovery & Egress Shield"]
-        direction LR
-        PinGuard["ToolIntegrityGuard<br/>SHA-256 Rug-Pull Pinning"] --> EGuard["EgressSecretGuard<br/>In-Flight Credential Redaction"]
-    end
-
-    EGuard -->|"Verified Clean Output"| Agent
-    CB & Core & PinGuard & EGuard --> Audit["HMAC-SHA256 Signed NDJSON Audit<br/>+ Fault-Isolated ViolationHooks + CLI"]
-
-    style CB fill:#0f172a,stroke:#f97316,stroke-width:1.5px,color:#f8fafc
-    style UGuard fill:#0f172a,stroke:#38bdf8,stroke-width:1.5px,color:#f8fafc
-    style Core fill:#0f172a,stroke:#10b981,stroke-width:1.5px,color:#f8fafc
-    style PinGuard fill:#0f172a,stroke:#eab308,stroke-width:1.5px,color:#f8fafc
-    style EGuard fill:#0f172a,stroke:#ef4444,stroke-width:1.5px,color:#f8fafc
+    style Ingress fill:#0f172a,stroke:#10b981,stroke-width:1.5px,color:#f8fafc
+    style Egress fill:#0f172a,stroke:#eab308,stroke-width:1.5px,color:#f8fafc
     style Audit fill:#0f172a,stroke:#a855f7,stroke-width:1.5px,color:#f8fafc
+
 ```
 
 ---
@@ -100,7 +85,7 @@ npm install "github:yoshikinga/mcp-warden#v1.1.0"
 **Or clone from source to run the 44-vector OWASP red-team suite, CLI self-test & benchmarks:**
 
 ```bash
-git clone "[https://github.com/yoshikinga/mcp-warden.git](https://github.com/yoshikinga/mcp-warden.git)"
+git clone "https://github.com/yoshikinga/mcp-warden.git"
 cd mcp-warden && npm install
 npm test && npm run selftest && npm run bench
 ```
